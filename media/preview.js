@@ -402,7 +402,7 @@
   }
 
   // Find and render all mermaid code blocks
-  function renderAllDiagrams() {
+  async function renderAllDiagrams() {
     if (typeof mermaid === 'undefined') {
       console.warn('Mermaidly: Mermaid library not loaded');
       return;
@@ -443,10 +443,14 @@
     }
 
     console.log('Mermaidly: About to render', codeBlocks.length, 'diagrams');
-    codeBlocks.forEach((codeBlock, index) => {
-      console.log('Mermaidly: Processing block', index);
-      renderDiagram(codeBlock);
-    });
+    for (let i = 0; i < codeBlocks.length; i++) {
+      console.log('Mermaidly: Processing block', i);
+      try {
+        await renderDiagram(codeBlocks[i]);
+      } catch (err) {
+        console.error('Mermaidly: Failed to render block', i, err);
+      }
+    }
   }
 
   // Initial render
