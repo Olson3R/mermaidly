@@ -2,7 +2,7 @@
   "name": "mermaidly",
   "displayName": "Mermaidly",
   "description": "Zoomable and pannable Mermaid diagrams in VS Code markdown preview",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "publisher": "mermaidly",
   "engines": {
     "vscode": "^1.85.0"

@@ -61,6 +61,7 @@
       <button class="mermaidly-btn mermaidly-copy-code" title="Copy Mermaid code">Code</button>
       <button class="mermaidly-btn mermaidly-copy-svg" title="Copy as SVG">SVG</button>
       <button class="mermaidly-btn mermaidly-copy-png" title="Copy as PNG">PNG</button>
+      <button class="mermaidly-btn mermaidly-fullscreen" title="Toggle fullscreen">⛶</button>
     `;
     return controls;
   }
@@ -184,6 +185,37 @@
     } catch (err) {
       console.error('Mermaidly: PNG export error:', err);
       showToast('Failed: ' + err.message);
+    }
+  }
+
+  // Toggle fullscreen mode for a container
+  function toggleFullscreen(container) {
+    const isFullscreen = container.classList.toggle('mermaidly-fullscreen-mode');
+
+    if (isFullscreen) {
+      // Store scroll position
+      container.dataset.scrollY = window.scrollY;
+      document.body.style.overflow = 'hidden';
+
+      // Add escape key listener
+      const escHandler = (e) => {
+        if (e.key === 'Escape') {
+          toggleFullscreen(container);
+          document.removeEventListener('keydown', escHandler);
+        }
+      };
+      document.addEventListener('keydown', escHandler);
+      container._escHandler = escHandler;
+    } else {
+      document.body.style.overflow = '';
+      // Restore scroll position
+      if (container.dataset.scrollY) {
+        window.scrollTo(0, parseInt(container.dataset.scrollY));
+      }
+      // Remove escape handler
+      if (container._escHandler) {
+        document.removeEventListener('keydown', container._escHandler);
+      }
     }
   }
 
@@ -338,6 +370,11 @@
     container.querySelector('.mermaidly-copy-png')?.addEventListener('click', (e) => {
       e.preventDefault();
       copyPng(container);
+    });
+
+    container.querySelector('.mermaidly-fullscreen')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      toggleFullscreen(container);
     });
   }
 
