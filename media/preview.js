@@ -55,13 +55,13 @@
     controls.innerHTML = `
       <button class="mermaidly-btn mermaidly-zoom-in" title="Zoom In">+</button>
       <button class="mermaidly-btn mermaidly-zoom-out" title="Zoom Out">−</button>
-      <button class="mermaidly-btn mermaidly-zoom-reset" title="Reset View">⟲</button>
+      <button class="mermaidly-btn mermaidly-zoom-fit" title="Fit to View">Fit</button>
+      <button class="mermaidly-btn mermaidly-fullscreen" title="Toggle Fullscreen">⛶</button>
       <span class="mermaidly-zoom-level">100%</span>
       <span class="mermaidly-spacer"></span>
       <button class="mermaidly-btn mermaidly-copy-code" title="Copy Mermaid code">Code</button>
       <button class="mermaidly-btn mermaidly-copy-svg" title="Copy as SVG">SVG</button>
       <button class="mermaidly-btn mermaidly-copy-png" title="Copy as PNG">PNG</button>
-      <button class="mermaidly-btn mermaidly-fullscreen" title="Toggle fullscreen">⛶</button>
     `;
     return controls;
   }
@@ -238,7 +238,7 @@
     const content = container.querySelector('.mermaidly-content');
     const zoomInBtn = container.querySelector('.mermaidly-zoom-in');
     const zoomOutBtn = container.querySelector('.mermaidly-zoom-out');
-    const resetBtn = container.querySelector('.mermaidly-zoom-reset');
+    const fitBtn = container.querySelector('.mermaidly-zoom-fit');
     const zoomLevel = container.querySelector('.mermaidly-zoom-level');
 
     let scale = 1;
@@ -261,8 +261,23 @@
       }
     }
 
-    function reset() {
-      scale = 1;
+    function fitToView() {
+      const svg = content.querySelector('svg');
+      if (!svg) return;
+
+      const viewportRect = viewport.getBoundingClientRect();
+      const svgRect = svg.getBoundingClientRect();
+
+      // Calculate scale to fit, accounting for current scale
+      const currentScale = scale;
+      const naturalWidth = svgRect.width / currentScale;
+      const naturalHeight = svgRect.height / currentScale;
+
+      const scaleX = (viewportRect.width - 40) / naturalWidth;  // 40px padding
+      const scaleY = (viewportRect.height - 40) / naturalHeight;
+      const newScale = Math.min(scaleX, scaleY, MAX_ZOOM);
+
+      scale = Math.max(MIN_ZOOM, newScale);
       translateX = 0;
       translateY = 0;
       updateTransform();
@@ -279,9 +294,9 @@
       zoom(-ZOOM_STEP);
     });
 
-    resetBtn.addEventListener('click', (e) => {
+    fitBtn?.addEventListener('click', (e) => {
       e.preventDefault();
-      reset();
+      fitToView();
     });
 
     // Mouse wheel zoom
@@ -350,10 +365,10 @@
       isPanning = false;
     }, { passive: true });
 
-    // Double-click to reset
+    // Double-click to fit
     viewport.addEventListener('dblclick', (e) => {
       e.preventDefault();
-      reset();
+      fitToView();
     });
 
     // Copy buttons
