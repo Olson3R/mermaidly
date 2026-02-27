@@ -2,7 +2,7 @@
   "name": "mermaidly",
   "displayName": "Mermaidly",
   "description": "Zoomable and pannable Mermaid diagrams in VS Code markdown preview",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "publisher": "mermaidly",
   "engines": {
     "vscode": "^1.85.0"
@@ -27,7 +27,17 @@
     ],
     "markdown.previewStyles": [
       "./media/preview.css"
-    ]
+    ],
+    "configuration": {
+      "title": "Mermaidly",
+      "properties": {
+        "mermaidly.debug": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show debug information overlay in markdown preview"
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run build",

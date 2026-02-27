@@ -3,16 +3,28 @@
 
   console.log('Mermaidly: Script loaded');
 
-  // Visual debug - remove after testing
-  const debugDiv = document.createElement('div');
-  debugDiv.style.cssText = 'position:fixed;top:0;left:0;background:yellow;color:black;padding:4px;font-size:12px;z-index:9999;';
-  debugDiv.textContent = 'Mermaidly: Loading...';
-  document.body.appendChild(debugDiv);
+  // Debug mode - enable via: localStorage.setItem('mermaidly-debug', 'true') in console
+  const debugEnabled = localStorage.getItem('mermaidly-debug') === 'true';
+  let debugDiv = null;
+
+  if (debugEnabled) {
+    debugDiv = document.createElement('div');
+    debugDiv.style.cssText = 'position:fixed;top:0;left:0;background:yellow;color:black;padding:4px 8px;font-size:12px;z-index:9999;cursor:pointer;';
+    debugDiv.title = 'Click to dismiss (disable: localStorage.removeItem("mermaidly-debug"))';
+    debugDiv.textContent = 'Mermaidly: Loading...';
+    debugDiv.onclick = () => debugDiv.remove();
+    document.body.appendChild(debugDiv);
+  }
+
+  function updateDebug(msg) {
+    if (debugDiv) debugDiv.textContent = msg;
+    console.log('Mermaidly:', msg);
+  }
 
   setTimeout(() => {
     const allCode = document.querySelectorAll('code.language-mermaid');
     const rendered = document.querySelectorAll('.mermaidly-container');
-    debugDiv.textContent = `Mermaid: ${typeof mermaid !== 'undefined' ? 'YES' : 'NO'} | Found: ${allCode.length} | Rendered: ${rendered.length}`;
+    updateDebug(`Mermaid: ${typeof mermaid !== 'undefined' ? 'YES' : 'NO'} | Found: ${allCode.length} | Rendered: ${rendered.length}`);
   }, 2000);
 
   // Configuration
@@ -435,11 +447,9 @@
       });
 
       // Update debug div
-      if (debugDiv) {
-        debugDiv.textContent = `Mermaid: ${typeof mermaid !== 'undefined' ? 'YES' : 'NO'} | Blocks: 0 | Code elements: ${allCode.length}`;
-      }
-    } else if (debugDiv) {
-      debugDiv.textContent = `Mermaid: YES | Rendering ${codeBlocks.length} diagrams...`;
+      updateDebug(`Mermaid: ${typeof mermaid !== 'undefined' ? 'YES' : 'NO'} | Blocks: 0 | Code elements: ${allCode.length}`);
+    } else {
+      updateDebug(`Mermaid: YES | Rendering ${codeBlocks.length} diagrams...`);
     }
 
     console.log('Mermaidly: About to render', codeBlocks.length, 'diagrams');
