@@ -1,0 +1,44 @@
+{
+  "name": "mermaidly",
+  "displayName": "Mermaidly",
+  "description": "Zoomable and pannable Mermaid diagrams in VS Code markdown preview",
+  "version": "1.0.0",
+  "publisher": "mermaidly",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Visualization",
+    "Other"
+  ],
+  "keywords": [
+    "mermaid",
+    "markdown",
+    "diagram",
+    "flowchart",
+    "zoom"
+  ],
+  "activationEvents": [],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "markdown.previewScripts": [
+      "./media/mermaid.min.js",
+      "./media/preview.js"
+    ],
+    "markdown.previewStyles": [
+      "./media/preview.css"
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run build",
+    "build": "node esbuild.config.mjs",
+    "watch": "node esbuild.config.mjs --watch",
+    "download-mermaid": "curl -L https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js -o media/mermaid.min.js"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/vscode": "^1.85.0",
+    "esbuild": "^0.20.0",
+    "typescript": "^5.3.0"
+  }
+}

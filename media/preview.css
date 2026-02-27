@@ -1,0 +1,165 @@
+/* Mermaidly - Zoomable Mermaid Diagrams */
+
+.mermaidly-container {
+  margin: 1rem 0;
+  border: 1px solid var(--vscode-panel-border, #454545);
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--vscode-editor-background, #1e1e1e);
+}
+
+.mermaidly-viewport {
+  width: 100%;
+  min-height: 200px;
+  max-height: 600px;
+  overflow: hidden;
+  cursor: grab;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.mermaidly-viewport:active {
+  cursor: grabbing;
+}
+
+.mermaidly-content {
+  transform-origin: center center;
+  transition: transform 0.05s ease-out;
+  display: inline-block;
+}
+
+.mermaidly-content svg {
+  max-width: none !important;
+  height: auto;
+}
+
+.mermaidly-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: var(--vscode-sideBar-background, #252526);
+  border-top: 1px solid var(--vscode-panel-border, #454545);
+}
+
+.mermaidly-btn {
+  padding: 0.25rem 0.75rem;
+  border: 1px solid var(--vscode-button-border, transparent);
+  background: var(--vscode-button-secondaryBackground, #3a3d41);
+  color: var(--vscode-button-secondaryForeground, #ffffff);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-family: var(--vscode-font-family);
+  line-height: 1.4;
+  min-width: 28px;
+  transition: background-color 0.1s;
+}
+
+.mermaidly-btn:hover {
+  background: var(--vscode-button-secondaryHoverBackground, #45494e);
+}
+
+.mermaidly-btn:active {
+  background: var(--vscode-button-background, #0e639c);
+}
+
+.mermaidly-zoom-level {
+  font-size: 12px;
+  color: var(--vscode-descriptionForeground, #969696);
+  min-width: 40px;
+  text-align: center;
+  font-family: var(--vscode-editor-font-family, monospace);
+}
+
+.mermaidly-spacer {
+  flex: 1;
+}
+
+.mermaidly-toast {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--vscode-button-background, #0e639c);
+  color: var(--vscode-button-foreground, #ffffff);
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 13px;
+  z-index: 10000;
+  animation: mermaidly-toast-fade 2s ease-in-out;
+}
+
+@keyframes mermaidly-toast-fade {
+  0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+  10% { opacity: 1; transform: translateX(-50%) translateY(0); }
+  90% { opacity: 1; transform: translateX(-50%) translateY(0); }
+  100% { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+}
+
+.mermaidly-error {
+  margin: 1rem 0;
+  padding: 1rem;
+  background: var(--vscode-inputValidation-errorBackground, #5a1d1d);
+  border: 1px solid var(--vscode-inputValidation-errorBorder, #be1100);
+  border-radius: 6px;
+  color: var(--vscode-errorForeground, #f48771);
+}
+
+.mermaidly-error strong {
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.mermaidly-error pre {
+  margin: 0;
+  padding: 0.5rem;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+  font-size: 12px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Light theme adjustments */
+.vscode-light .mermaidly-container {
+  border-color: var(--vscode-panel-border, #c8c8c8);
+}
+
+.vscode-light .mermaidly-controls {
+  background: var(--vscode-sideBar-background, #f3f3f3);
+  border-color: var(--vscode-panel-border, #c8c8c8);
+}
+
+.vscode-light .mermaidly-btn {
+  background: var(--vscode-button-secondaryBackground, #e0e0e0);
+  color: var(--vscode-button-secondaryForeground, #333333);
+}
+
+.vscode-light .mermaidly-btn:hover {
+  background: var(--vscode-button-secondaryHoverBackground, #d0d0d0);
+}
+
+/* High contrast theme */
+.vscode-high-contrast .mermaidly-container {
+  border-width: 2px;
+}
+
+.vscode-high-contrast .mermaidly-btn {
+  border-width: 2px;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .mermaidly-viewport {
+    min-height: 150px;
+    max-height: 400px;
+  }
+
+  .mermaidly-controls {
+    flex-wrap: wrap;
+  }
+}

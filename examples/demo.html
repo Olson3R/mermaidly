@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="default">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>demo - Mermaidly</title>
+  <style>
+    :root {
+      --bg-color: #ffffff;
+      --text-color: #1a1a1a;
+      --toc-bg: #f5f5f5;
+      --toc-border: #e0e0e0;
+      --link-color: #0066cc;
+      --code-bg: #f0f0f0;
+      --diagram-bg: #ffffff;
+      --diagram-border: #e0e0e0;
+    }
+
+    [data-theme="dark"] {
+      --bg-color: #1a1a1a;
+      --text-color: #e0e0e0;
+      --toc-bg: #2a2a2a;
+      --toc-border: #404040;
+      --link-color: #66b3ff;
+      --code-bg: #2d2d2d;
+      --diagram-bg: #2a2a2a;
+      --diagram-border: #404040;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      line-height: 1.6;
+      color: var(--text-color);
+      background-color: var(--bg-color);
+      margin: 0;
+      padding: 0;
+    }
+
+    .layout {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    .toc-sidebar {
+      width: 280px;
+      flex-shrink: 0;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      background: var(--toc-bg);
+      border-right: 1px solid var(--toc-border);
+      padding: 1.5rem;
+    }
+
+    .toc-sidebar:empty {
+      display: none;
+    }
+
+    .toc-sidebar + .main-content {
+      max-width: calc(100% - 280px);
+    }
+
+    .mermaidly-toc .toc-title {
+      font-size: 1rem;
+      font-weight: 600;
+      margin: 0 0 1rem 0;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-color);
+      opacity: 0.7;
+    }
+
+    .mermaidly-toc ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .mermaidly-toc ul ul {
+      padding-left: 1rem;
+      margin-top: 0.25rem;
+    }
+
+    .mermaidly-toc li {
+      margin: 0.25rem 0;
+    }
+
+    .mermaidly-toc a {
+      color: var(--link-color);
+      text-decoration: none;
+      display: block;
+      padding: 0.25rem 0;
+      transition: opacity 0.2s;
+    }
+
+    .mermaidly-toc a:hover {
+      opacity: 0.8;
+      text-decoration: underline;
+    }
+
+    .main-content {
+      flex: 1;
+      max-width: 900px;
+      padding: 2rem 3rem;
+      margin: 0 auto;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 2rem;
+      margin-bottom: 1rem;
+      font-weight: 600;
+      line-height: 1.3;
+    }
+
+    h1 { font-size: 2.5rem; margin-top: 0; }
+    h2 { font-size: 1.75rem; }
+    h3 { font-size: 1.5rem; }
+    h4 { font-size: 1.25rem; }
+
+    a {
+      color: var(--link-color);
+    }
+
+    code {
+      background: var(--code-bg);
+      padding: 0.2em 0.4em;
+      border-radius: 3px;
+      font-family: 'SF Mono', Monaco, Consolas, monospace;
+      font-size: 0.9em;
+    }
+
+    pre {
+      background: var(--code-bg);
+      padding: 1rem;
+      border-radius: 6px;
+      overflow-x: auto;
+    }
+
+    pre code {
+      background: none;
+      padding: 0;
+    }
+
+    .mermaid-container {
+      margin: 1.5rem 0;
+      border: 1px solid var(--diagram-border);
+      border-radius: 8px;
+      overflow: hidden;
+      background: var(--diagram-bg);
+    }
+
+    .mermaid-diagram {
+      padding: 1rem;
+      overflow: auto;
+      cursor: grab;
+      min-height: 200px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .mermaid-diagram:active {
+      cursor: grabbing;
+    }
+
+    .mermaid-diagram svg {
+      max-width: 100%;
+      height: auto;
+      transition: transform 0.1s ease-out;
+    }
+
+    .mermaid-controls {
+      display: flex;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: var(--toc-bg);
+      border-top: 1px solid var(--diagram-border);
+    }
+
+    .mermaid-controls button {
+      padding: 0.25rem 0.75rem;
+      border: 1px solid var(--diagram-border);
+      background: var(--bg-color);
+      color: var(--text-color);
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.875rem;
+      transition: background-color 0.2s;
+    }
+
+    .mermaid-controls button:hover {
+      background: var(--toc-bg);
+    }
+
+    .mermaid-error {
+      padding: 1rem;
+      background: #fff0f0;
+      border: 1px solid #ffcccc;
+      border-radius: 6px;
+      color: #cc0000;
+    }
+
+    [data-theme="dark"] .mermaid-error {
+      background: #2d1f1f;
+      border-color: #4d2f2f;
+      color: #ff6666;
+    }
+
+    .mermaid-error pre {
+      background: rgba(0,0,0,0.1);
+      margin: 0.5rem 0 0;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 1rem 0;
+    }
+
+    th, td {
+      border: 1px solid var(--toc-border);
+      padding: 0.75rem;
+      text-align: left;
+    }
+
+    th {
+      background: var(--toc-bg);
+    }
+
+    blockquote {
+      margin: 1rem 0;
+      padding: 0.5rem 1rem;
+      border-left: 4px solid var(--link-color);
+      background: var(--toc-bg);
+    }
+
+    blockquote p {
+      margin: 0;
+    }
+
+    img {
+      max-width: 100%;
+      height: auto;
+    }
+
+    @media (max-width: 768px) {
+      .layout {
+        flex-direction: column;
+      }
+
+      .toc-sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+        border-right: none;
+        border-bottom: 1px solid var(--toc-border);
+      }
+
+      .toc-sidebar + .main-content {
+        max-width: 100%;
+      }
+
+      .main-content {
+        padding: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside class="toc-sidebar">
+      <nav class="mermaidly-toc">
+<h2 class="toc-title">Table of Contents</h2>
+<ul>
+<li><a href="#mermaidly-demo">Mermaidly Demo</a><ul>
+<li><a href="#quick-start">Quick Start</a></li>
+<li><a href="#flowcharts">Flowcharts</a></li>
+<li><a href="#sequence-diagrams">Sequence Diagrams</a></li>
+<li><a href="#entity-relationship-diagrams">Entity Relationship Diagrams</a></li>
+<li><a href="#state-diagrams">State Diagrams</a></li>
+<li><a href="#gantt-charts">Gantt Charts</a></li>
+<li><a href="#pie-charts">Pie Charts</a></li>
+<li><a href="#class-diagrams">Class Diagrams</a></li>
+<li><a href="#git-graphs">Git Graphs</a></li>
+<li><a href="#features">Features</a><ul>
+<li><a href="#zoomable-diagrams">Zoomable Diagrams</a></li>
+<li><a href="#table-of-contents">Table of Contents</a></li>
+<li><a href="#themes">Themes</a></li>
+<li><a href="#export">Export</a></li>
+</ul></li>
+<li><a href="#conclusion">Conclusion</a></li>
+</ul></li>
+</ul>
+</nav>
+    </aside>
+    <main class="main-content">
+      <h1 id="mermaidly-demo" tabindex="-1"><a class="header-anchor" href="#mermaidly-demo">Mermaidly Demo</a></h1>
+<p>Welcome to Mermaidly! This document demonstrates the key features of the markdown renderer with embedded Mermaid diagrams.</p>
+<h2 id="quick-start" tabindex="-1"><a class="header-anchor" href="#quick-start">Quick Start</a></h2>
+<p>Mermaidly makes it easy to include diagrams in your markdown documentation. Just use fenced code blocks with the <code>mermaid</code> language identifier.</p>
+<h2 id="flowcharts" tabindex="-1"><a class="header-anchor" href="#flowcharts">Flowcharts</a></h2>
+<p>Flowcharts are great for visualizing processes and decision trees.</p>
+<div class="mermaid-container" data-diagram-id="mermaid-diagram-1">
+      <div class="mermaid-diagram"><div class="mermaid-error">
+      <strong>Diagram Error:</strong>
+      <pre>text2.getBBox is not a function</pre>
+      <details>
+        <summary>Source</summary>
+        <pre>flowchart TD
+    A[Start] --&gt; B{Is it working?}
+    B --&gt;|Yes| C[Great!]
+    B --&gt;|No| D[Debug]
+    D --&gt; E[Check logs]
+    E --&gt; F[Fix issue]
+    F --&gt; B
+    C --&gt; G[Deploy]
+</pre>
+      </details>
+    </div></div>
+      <div class="mermaid-controls">
+        <button class="zoom-in" title="Zoom In">+</button>
+        <button class="zoom-out" title="Zoom Out">-</button>
+        <button class="zoom-reset" title="Reset">Reset</button>
+      </div>
+    </div><h2 id="sequence-diagrams" tabindex="-1"><a class="header-anchor" href="#sequence-diagrams">Sequence Diagrams</a></h2>
+<p>Sequence diagrams show how different components interact over time.</p>
+<div class="mermaid-container" data-diagram-id="mermaid-diagram-2">
+      <div class="mermaid-diagram"><div class="mermaid-error">
+      <strong>Diagram Error:</strong>
+      <pre>(textElem._groups || textElem)[0][0].getBBox is not a function</pre>
+      <details>
+        <summary>Source</summary>
+        <pre>sequenceDiagram
+    participant User
+    participant Frontend
+    participant API
+    participant Database
+
+    User-&gt;&gt;Frontend: Click submit
+    Frontend-&gt;&gt;API: POST /data
+    API-&gt;&gt;Database: INSERT record
+    Database--&gt;&gt;API: Success
+    API--&gt;&gt;Frontend: 200 OK
+    Frontend--&gt;&gt;User: Show success message
+</pre>
+      </details>
+    </div></div>
+      <div class="mermaid-controls">
+        <button class="zoom-in" title="Zoom In">+</button>
+        <button class="zoom-out" title="Zoom Out">-</button>
+        <button class="zoom-reset" title="Reset">Reset</button>
+      </div>
+    </div><h2 id="entity-relationship-diagrams" tabindex="-1"><a class="header-anchor" href="#entity-relationship-diagrams">Entity Relationship Diagrams</a></h2>
+<p>ER diagrams are perfect for documenting database schemas.</p>
+<div class="mermaid-container" data-diagram-id="mermaid-diagram-3">
+      <div class="mermaid-diagram"><div class="mermaid-error">
+      <strong>Diagram Error:</strong>
+      <pre>(textElem._groups || textElem)[0][0].getBBox is not a function</pre>
+      <details>
+        <summary>Source</summary>
+        <pre>erDiagram
+    USER ||--o{ ORDER : places
+    USER {
+        int id PK
+        string name
+        string email UK
+    }
+    ORDER ||--|{ LINE_ITEM : contains
+    ORDER {
+        int id PK
+        date created_at
+        string status
+    }
+    PRODUCT ||--o{ LINE_ITEM : &quot;ordered in&quot;
+    PRODUCT {
+        int id PK
+        string name
+        decimal price
+    }
+    LINE_ITEM {
+        int quantity
+    }
+</pre>
+      </details>
+    </div></div>
+      <div class="mermaid-controls">
+        <button class="zoom-in" title="Zoom In">+</button>
+        <button class="zoom-out" title="Zoom Out">-</button>
+        <button class="zoom-reset" title="Reset">Reset</button>
+      </div>
+    </div><h2 id="state-diagrams" tabindex="-1"><a class="header-anchor" href="#state-diagrams">State Diagrams</a></h2>
+<p>State diagrams are useful for modeling object lifecycles.</p>
+<div class="mermaid-container" data-diagram-id="mermaid-diagram-4">
+      <div class="mermaid-diagram"><div class="mermaid-error">
+      <strong>Diagram Error:</strong>
+      <pre>element.node(...).getBBox is not a function</pre>
+      <details>
+        <summary>Source</summary>
+        <pre>stateDiagram-v2
+    [*] --&gt; Draft
+    Draft --&gt; Pending: Submit
+    Pending --&gt; Approved: Approve
+    Pending --&gt; Rejected: Reject
+    Rejected --&gt; Draft: Revise
+    Approved --&gt; Published: Publish
+    Published --&gt; Archived: Archive
+    Archived --&gt; [*]
+</pre>
+      </details>
+    </div></div>
+      <div class="mermaid-controls">
+        <button class="zoom-in" title="Zoom In">+</button>
+        <button class="zoom-out" title="Zoom Out">-</button>
+        <button class="zoom-reset" title="Reset">Reset</button>
+      </div>
+    </div><h2 id="gantt-charts" tabindex="-1"><a class="header-anchor" href="#gantt-charts">Gantt Charts</a></h2>
+<p>Gantt charts help visualize project timelines.</p>
+<div class="mermaid-container" data-diagram-id="mermaid-diagram-5">
+      <div class="mermaid-diagram"><div class="mermaid-error">
+      <strong>Diagram Error:</strong>
+      <pre>this.getBBox is not a function</pre>
+      <details>
+        <summary>Source</summary>
+        <pre>gantt
+    title Project Timeline
+    dateFormat YYYY-MM-DD
+    section Planning
+        Requirements    :a1, 2024-01-01, 7d
+        Design          :a2, after a1, 14d
+    section Development
+        Frontend        :b1, after a2, 21d
+        Backend         :b2, after a2, 28d
+        Integration     :b3, after b1, 7d
+    section Testing
+        QA Testing      :c1, after b3, 14d
+        Bug Fixes       :c2, after c1, 7d
+    section Deployment
+        Launch          :milestone, after c2, 0d
+</pre>
+      </details>
+    </div></div>
+      <div class="mermaid-controls">
+        <button class="zoom-in" title="Zoom In">+</button>
+        <button class="zoom-out" title="Zoom Out">-</button>
+        <button class="zoom-reset" title="Reset">Reset</button>
+      </div>
+    </div><h2 id="pie-charts" tabindex="-1"><a class="header-anchor" href="#pie-charts">Pie Charts</a></h2>
+<p>Pie charts visualize proportional data.</p>
+<div class="mermaid-container" data-diagram-id="mermaid-diagram-6">
+      <div class="mermaid-diagram"><svg id="mermaid-diagram-6" width="100%" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 450" style="max-width: 512px;" role="graphics-document document" aria-roledescription="pie"><style>#mermaid-diagram-6{font-family:system-ui,-apple-system,sans-serif;font-size:16px;fill:#333;}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#mermaid-diagram-6 .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#mermaid-diagram-6 .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#mermaid-diagram-6 .error-icon{fill:#552222;}#mermaid-diagram-6 .error-text{fill:#552222;stroke:#552222;}#mermaid-diagram-6 .edge-thickness-normal{stroke-width:1px;}#mermaid-diagram-6 .edge-thickness-thick{stroke-width:3.5px;}#mermaid-diagram-6 .edge-pattern-solid{stroke-dasharray:0;}#mermaid-diagram-6 .edge-thickness-invisible{stroke-width:0;fill:none;}#mermaid-diagram-6 .edge-pattern-dashed{stroke-dasharray:3;}#mermaid-diagram-6 .edge-pattern-dotted{stroke-dasharray:2;}#mermaid-diagram-6 .marker{fill:#333333;stroke:#333333;}#mermaid-diagram-6 .marker.cross{stroke:#333333;}#mermaid-diagram-6 svg{font-family:system-ui,-apple-system,sans-serif;font-size:16px;}#mermaid-diagram-6 p{margin:0;}#mermaid-diagram-6 .pieCircle{stroke:black;stroke-width:2px;opacity:0.7;}#mermaid-diagram-6 .pieOuterCircle{stroke:black;stroke-width:2px;fill:none;}#mermaid-diagram-6 .pieTitleText{text-anchor:middle;font-size:25px;fill:black;font-family:system-ui,-apple-system,sans-serif;}#mermaid-diagram-6 .slice{font-family:system-ui,-apple-system,sans-serif;fill:#333;font-size:17px;}#mermaid-diagram-6 .legend text{fill:black;font-family:system-ui,-apple-system,sans-serif;font-size:17px;}#mermaid-diagram-6 :root{--mermaid-font-family:system-ui,-apple-system,sans-serif;}</style><g></g><g transform="translate(225,225)"><circle cx="0" cy="0" r="186" class="pieOuterCircle"></circle><path d="M0,-185A185,185,0,0,1,57.168,175.945L0,0Z" fill="#ECECFF" class="pieCircle"></path><path d="M57.168,175.945A185,185,0,0,1,-185,0L0,0Z" fill="#ffffde" class="pieCircle"></path><path d="M-185,0A185,185,0,0,1,-108.74,-149.668L0,0Z" fill="hsl(80, 100%, 56.2745098039%)" class="pieCircle"></path><path d="M-108.74,-149.668A185,185,0,0,1,0,-185L0,0Z" fill="hsl(240, 100%, 86.2745098039%)" class="pieCircle"></path><text transform="translate(137.04175725757537,-21.705282024332003)" style="text-anchor: middle;" class="slice">45%</text><text transform="translate(-81.55520375558073,112.2511079695239)" style="text-anchor: middle;" class="slice">30%</text><text transform="translate(-123.627155231136,-62.99118183886221)" style="text-anchor: middle;" class="slice">15%</text><text transform="translate(-42.87610796952386,-131.95909163595257)" style="text-anchor: middle;" class="slice">10%</text><text x="0" y="-200" class="pieTitleText">Language Usage</text><g class="legend" transform="translate(216,-44)"><rect width="18" height="18" style="fill: #ECECFF; stroke: #ECECFF;"></rect><text x="22" y="14">JavaScript [45]</text></g><g class="legend" transform="translate(216,-22)"><rect width="18" height="18" style="fill: #ffffde; stroke: #ffffde;"></rect><text x="22" y="14">TypeScript [30]</text></g><g class="legend" transform="translate(216,0)"><rect width="18" height="18" style="fill: hsl(80, 100%, 56.2745098039%); stroke: hsl(80, 100%, 56.2745098039%);"></rect><text x="22" y="14">Python [15]</text></g><g class="legend" transform="translate(216,22)"><rect width="18" height="18" style="fill: hsl(240, 100%, 86.2745098039%); stroke: hsl(240, 100%, 86.2745098039%);"></rect><text x="22" y="14">Other [10]</text></g></g></svg></div>
+      <div class="mermaid-controls">
+        <button class="zoom-in" title="Zoom In">+</button>
+        <button class="zoom-out" title="Zoom Out">-</button>
+        <button class="zoom-reset" title="Reset">Reset</button>
+      </div>
+    </div><h2 id="class-diagrams" tabindex="-1"><a class="header-anchor" href="#class-diagrams">Class Diagrams</a></h2>
+<p>Class diagrams document object-oriented structures.</p>
+<div class="mermaid-container" data-diagram-id="mermaid-diagram-7">
+      <div class="mermaid-diagram"><div class="mermaid-error">
+      <strong>Diagram Error:</strong>
+      <pre>(textElem._groups || textElem)[0][0].getBBox is not a function</pre>
+      <details>
+        <summary>Source</summary>
+        <pre>classDiagram
+    class Animal {
+        +String name
+        +int age
+        +makeSound()
+    }
+    class Dog {
+        +String breed
+        +bark()
+        +fetch()
+    }
+    class Cat {
+        +String color
+        +meow()
+        +scratch()
+    }
+    Animal &lt;|-- Dog
+    Animal &lt;|-- Cat
+</pre>
+      </details>
+    </div></div>
+      <div class="mermaid-controls">
+        <button class="zoom-in" title="Zoom In">+</button>
+        <button class="zoom-out" title="Zoom Out">-</button>
+        <button class="zoom-reset" title="Reset">Reset</button>
+      </div>
+    </div><h2 id="git-graphs" tabindex="-1"><a class="header-anchor" href="#git-graphs">Git Graphs</a></h2>
+<p>Git graphs visualize branching and merging.</p>
+<div class="mermaid-container" data-diagram-id="mermaid-diagram-8">
+      <div class="mermaid-diagram"><div class="mermaid-error">
+      <strong>Diagram Error:</strong>
+      <pre>labelElement.getBBox is not a function</pre>
+      <details>
+        <summary>Source</summary>
+        <pre>gitGraph
+    commit
+    commit
+    branch feature
+    checkout feature
+    commit
+    commit
+    checkout main
+    merge feature
+    commit
+    branch hotfix
+    checkout hotfix
+    commit
+    checkout main
+    merge hotfix
+</pre>
+      </details>
+    </div></div>
+      <div class="mermaid-controls">
+        <button class="zoom-in" title="Zoom In">+</button>
+        <button class="zoom-out" title="Zoom Out">-</button>
+        <button class="zoom-reset" title="Reset">Reset</button>
+      </div>
+    </div><h2 id="features" tabindex="-1"><a class="header-anchor" href="#features">Features</a></h2>
+<h3 id="zoomable-diagrams" tabindex="-1"><a class="header-anchor" href="#zoomable-diagrams">Zoomable Diagrams</a></h3>
+<p>All diagrams support:</p>
+<ul>
+<li><strong>Mouse wheel</strong> - Zoom in/out</li>
+<li><strong>Click and drag</strong> - Pan around</li>
+<li><strong>Zoom buttons</strong> - +/- controls</li>
+<li><strong>Reset button</strong> - Return to original view</li>
+</ul>
+<h3 id="table-of-contents" tabindex="-1"><a class="header-anchor" href="#table-of-contents">Table of Contents</a></h3>
+<p>The sidebar shows a clickable table of contents generated from your markdown headings. Click any heading to smoothly scroll to that section.</p>
+<h3 id="themes" tabindex="-1"><a class="header-anchor" href="#themes">Themes</a></h3>
+<p>Mermaidly supports multiple themes:</p>
+<ul>
+<li><code>default</code> - Light theme</li>
+<li><code>dark</code> - Dark theme</li>
+<li><code>forest</code> - Green theme</li>
+<li><code>neutral</code> - Grayscale theme</li>
+</ul>
+<h3 id="export" tabindex="-1"><a class="header-anchor" href="#export">Export</a></h3>
+<p>Export your diagrams as PNG images with configurable scale:</p>
+<pre><code class="language-bash">mermaidly export demo.md --scale 2 --output-dir ./images
+</code></pre>
+<h2 id="conclusion" tabindex="-1"><a class="header-anchor" href="#conclusion">Conclusion</a></h2>
+<p>Mermaidly makes it easy to create beautiful, interactive documentation with embedded diagrams. Try it out!</p>
+
+    </main>
+  </div>
+
+  <script>
+    // Zoom functionality for diagrams
+    document.querySelectorAll('.mermaid-container').forEach(container => {
+      const diagram = container.querySelector('.mermaid-diagram');
+      const svg = diagram.querySelector('svg');
+      if (!svg) return;
+
+      let scale = 1;
+      let isPanning = false;
+      let startX, startY, translateX = 0, translateY = 0;
+
+      function updateTransform() {
+        svg.style.transform = `scale(${scale}) translate(${translateX}px, ${translateY}px)`;
+      }
+
+      // Zoom controls
+      container.querySelector('.zoom-in')?.addEventListener('click', () => {
+        scale = Math.min(scale * 1.2, 5);
+        updateTransform();
+      });
+
+      container.querySelector('.zoom-out')?.addEventListener('click', () => {
+        scale = Math.max(scale / 1.2, 0.2);
+        updateTransform();
+      });
+
+      container.querySelector('.zoom-reset')?.addEventListener('click', () => {
+        scale = 1;
+        translateX = 0;
+        translateY = 0;
+        updateTransform();
+      });
+
+      // Mouse wheel zoom
+      diagram.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        const delta = e.deltaY > 0 ? 0.9 : 1.1;
+        scale = Math.min(Math.max(scale * delta, 0.2), 5);
+        updateTransform();
+      });
+
+      // Pan functionality
+      diagram.addEventListener('mousedown', (e) => {
+        isPanning = true;
+        startX = e.clientX - translateX;
+        startY = e.clientY - translateY;
+      });
+
+      document.addEventListener('mousemove', (e) => {
+        if (!isPanning) return;
+        translateX = e.clientX - startX;
+        translateY = e.clientY - startY;
+        updateTransform();
+      });
+
+      document.addEventListener('mouseup', () => {
+        isPanning = false;
+      });
+    });
+
+    // Smooth scroll for TOC links
+    document.querySelectorAll('.mermaidly-toc a').forEach(link => {
+      link.addEventListener('click', (e) => {
+        const href = link.getAttribute('href');
+        if (href && href.startsWith('#')) {
+          e.preventDefault();
+          const target = document.querySelector(href);
+          if (target) {
+            target.scrollIntoView({ behavior: 'smooth' });
+            history.pushState(null, '', href);
+          }
+        }
+      });
+    });
+  </script>
+  
+</body>
+</html>
